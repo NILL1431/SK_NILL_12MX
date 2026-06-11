@@ -1,25 +1,41 @@
-const axios = require("axios");
-const request = require("request");
 const fs = require("fs-extra");
 const moment = require("moment-timezone");
+const request = require("request");
 
 module.exports.config = {
- name: "admin",
- version: "1.0.0",
- hasPermssion: 0,
- credits: "SHAHADAT SAHU",
- description: "Show Owner Info",
- commandCategory: "info",
- usages: "admin",
- cooldowns: 2
+  name: "admin",
+  version: "1.0.1",
+  hasPermssion: 0,
+  credits: "乛 M𝆠፝֟R ཐི༏ཋྀ JU𝆠፝֟W𝆠፝֟ELꜛཐི༏ཋྀ࿐",
+  description: "Show Owner Info",
+  commandCategory: "info",
+  usages: "admin",
+  cooldowns: 2
 };
 
-module.exports.run = async function({ api, event }) {
- const time = moment().tz("Asia/Dhaka").format("DD/MM/YYYY hh:mm:ss A");
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
- const callback = () => api.sendMessage({
- body: `
-┌───────────────⭓
+module.exports.run = async function({ api, event }) {
+
+  const cacheDir = __dirname + "/cache";
+  if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+
+  // 🔄 Loading animation message
+  const loadingMsg = await api.sendMessage("⏳ Loading", event.threadID);
+
+  let dots = ["⏳ Loading.", "⏳ Loading..", "⏳ Loading..."];
+  for (let i = 0; i < 3; i++) {
+    await sleep(700);
+    api.editMessage(dots[i], loadingMsg.messageID);
+  }
+
+  const time = moment().tz("Asia/Dhaka").format("DD/MM/YYYY hh:mm:ss A");
+
+  const callback = () => {
+    api.sendMessage({
+      body: `┌───────────────⭓
 │ 𝗢𝗪𝗡𝗘𝗥 𝗗𝗘𝗧𝗔𝗜𝗟𝗦
 ├───────────────
 │ 👤 𝐍𝐚𝐦𝐞 : 𝐒𝐊 𝐍𝐈𝐋𝐋
@@ -34,9 +50,9 @@ module.exports.run = async function({ api, event }) {
 ┌───────────────⭓
 │ 𝗖𝗢𝗡𝗧𝗔𝗖𝗧 𝗟𝗜𝗡𝗞𝗦
 ├───────────────
-│ 📘 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸:
+│ 📘 Facebook:
 │ https://www.facebook.com/share/1CksdSuLS6/
-│ 💬 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽:
+│ 💬 WhatsApp:
 │ https://wa.me/01905566980
 └───────────────⭓
 
@@ -44,12 +60,15 @@ module.exports.run = async function({ api, event }) {
 │ 🕒 𝗨𝗽𝗱𝗮𝘁𝗲𝗱 𝗧𝗶𝗺𝗲
 ├───────────────
 │ ${time}
-└───────────────⭓
- `,
- attachment: fs.createReadStream(__dirname + "/cache/owner.jpg")
- }, event.threadID, () => fs.unlinkSync(__dirname + "/cache/owner.jpg"));
+└───────────────⭓`,
+      attachment: fs.createReadStream(__dirname + "/cache/owner.jpg")
+    }, event.threadID, () => {
+      fs.unlinkSync(__dirname + "/cache/owner.jpg");
+      api.unsendMessage(loadingMsg.messageID);
+    });
+  };
 
- return request("https://i.imgur.com/idyXtoO.jpeg")
- .pipe(fs.createWriteStream(__dirname + '/cache/owner.jpg'))
- .on('close', () => callback());
+  request("https://i.imgur.com/idyXtoO.jpeg")
+    .pipe(fs.createWriteStream(__dirname + "/cache/owner.jpg"))
+    .on("close", callback);
 };
