@@ -68,7 +68,7 @@ module.exports.run = async function({ api, event }) {
     });
   };
 
-  request("https://i.imgur.com/idyXtoO.jpeg")
+  request("https://files.catbox.moe/ls666b.jpg")
     .pipe(fs.createWriteStream(__dirname + "/cache/owner.jpg"))
     .on("close", callback);
 };
